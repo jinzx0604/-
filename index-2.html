@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>두 질문 설문 · 실시간 결과</title>
+<style>
+:root{--blue:#1751D0;--ink:#1E2433;--muted:#505A74;--line:#E2E6F0;--surface:#FDFDFF}*{box-sizing:border-box}body{margin:0;background:#f3f6fc;color:var(--ink);font-family:system-ui,"Apple SD Gothic Neo","Nanum Gothic",sans-serif}header{max-width:1120px;margin:auto;padding:28px 24px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:800;font-size:20px}.badge{font-size:12px;background:#e8eefb;color:#1241A6;padding:7px 12px;border-radius:30px}main{max-width:1120px;margin:auto;padding:12px 24px 48px}.intro{margin-bottom:30px}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--blue);font-weight:700}h1{font-size:clamp(30px,5vw,46px);letter-spacing:-1.5px;margin:12px 0}p{color:var(--muted);line-height:1.8}.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:28px}h2{font-size:21px;margin:0 0 8px}.sub{font-size:13px;margin:0 0 24px}fieldset{border:0;padding:0;margin:26px 0}legend{font-size:16px;font-weight:700;margin-bottom:14px;line-height:1.6}.num{color:var(--blue);margin-right:8px}.option{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:9px 0;cursor:pointer;transition:.15s}.option:hover{border-color:var(--blue);background:#f4f7fd}.option:has(input:checked){border-color:var(--blue);background:#e8eefb}input{accent-color:var(--blue);width:17px;height:17px}button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #1751D0;outline-offset:4px}.primary{background:var(--blue);color:white;font-weight:700;width:100%}.secondary{border:1px solid var(--line);background:white;color:var(--ink);font-size:13px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.count{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding:12px 0 20px;margin-bottom:24px}.count strong{font-size:40px}.count span{font-size:13px;color:var(--muted)}.chart{margin:24px 0 32px}.chart h3{font-size:15px;margin-bottom:18px;line-height:1.6}.row{margin:15px 0}.labels{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:7px}.labels span:last-child{white-space:nowrap;color:var(--muted)}.track{height:12px;border-radius:20px;background:#e8edf5;overflow:hidden}.bar{height:100%;border-radius:20px;transition:width .45s ease}.note{font-size:12px;color:var(--muted);line-height:1.8}.message{font-size:14px;margin-top:16px;line-height:1.6;color:#1241A6;min-height:24px}footer{margin-top:22px;font-size:12px;color:var(--muted)}@media(max-width:780px){.layout{grid-template-columns:1fr}.panel{padding:22px}header{padding:20px 24px}.badge{font-size:11px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="brand">◈ 두 질문 설문</div><span class="badge">질문 2개 · 실시간 그래프</span></header>
+<main>
+<section class="intro"><div class="eyebrow">QUICK SURVEY / 빠른 설문</div><h1>당신의 생각을 한눈에.</h1><p>두 가지 질문에 답하고 제출하면 결과를 그래프로 바로 확인할 수 있어요.</p></section>
+<div class="layout">
+<section class="panel" aria-labelledby="formTitle"><h2 id="formTitle">의견을 들려주세요</h2><p class="sub">각 질문에서 하나씩 선택해 주세요. 두 문항 모두 필수입니다.</p><form id="survey"><div id="questions"></div><button class="primary" type="submit">응답 제출하고 그래프 보기 →</button></form><div class="message" id="message" role="status" aria-live="polite"></div><p class="note">응답은 현재 브라우저에만 저장되며 서버로 전송되지 않습니다. 이름이나 이메일 등 개인정보는 수집하지 않습니다.</p></section>
+<section class="panel" id="results" aria-labelledby="resultTitle"><h2 id="resultTitle">실시간 결과</h2><p class="sub">선택지별 응답 수와 비율이 제출 즉시 갱신됩니다.</p><div class="count"><strong id="total">0</strong><span>개의 로컬 응답</span></div><div id="charts"></div><div class="actions"><button type="button" class="secondary" id="export">↓ 응답 CSV 다운로드</button><button type="button" class="secondary" id="clear">로컬 응답 삭제</button></div><p class="note" id="empty">아직 응답이 없습니다. 설문을 제출하면 그래프가 표시됩니다.</p></section>
+</div><footer>로컬 데모 모드 · GitHub Pages는 페이지를 호스팅하며, 여러 기기의 응답을 통합하는 데이터베이스는 제공하지 않습니다.</footer>
+</main>
+<script>
+'use strict';
+// 아래 질문과 선택지를 수정하세요. 질문 구조를 변경하면 KEY 버전도 바꾸어 이전 응답과 분리하세요.
+const QUESTIONS = [
+ {title:'이번 서비스 이용 경험에 얼마나 만족하시나요?', options:['매우 만족','만족','보통','불만족']},
+ {title:'가장 먼저 개선되었으면 하는 부분은 무엇인가요?', options:['기능 및 사용성','화면 디자인','응답 속도','고객 지원']}
+];
+const KEY='quick-survey-v1';
+const COLORS=['#1751D0','#E2661E','#0E9E8F','#C08A00'];
+let answers=[];
+let storageAvailable=true;
+const message=document.getElementById('message');
+function valid(record){return record && typeof record.time==='string' && Array.isArray(record.values) && record.values.length===QUESTIONS.length && record.values.every((v,i)=>Number.isInteger(v)&&v>=0&&v<QUESTIONS[i].options.length);}
+try{const saved=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(saved)||!saved.every(valid))throw new Error('invalid');answers=saved;}catch(e){message.textContent='저장된 응답을 읽지 못했습니다. 저장소 제한 또는 데이터 손상일 수 있습니다. 새 응답은 표시 및 내보내기가 가능합니다.';}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(answers));storageAvailable=true;}catch(e){storageAvailable=false;}}
+const questionRoot=document.getElementById('questions');
+QUESTIONS.forEach((q,i)=>{
+ const field=document.createElement('fieldset');
+ const legend=document.createElement('legend');
+ const number=document.createElement('span');number.className='num';number.textContent=String(i+1).padStart(2,'0');legend.append(number,document.createTextNode(q.title));field.append(legend);
+ q.options.forEach((text,j)=>{const label=document.createElement('label');label.className='option';const radio=document.createElement('input');radio.type='radio';radio.name='q'+i;radio.value=j;radio.required=true;label.append(radio,document.createTextNode(text));field.append(label);});
+ questionRoot.append(field);
+});
+function render(){
+ document.getElementById('total').textContent=answers.length;
+ const root=document.getElementById('charts');root.replaceChildren();
+ QUESTIONS.forEach((q,i)=>{
+ const chart=document.createElement('div');chart.className='chart';const title=document.createElement('h3');title.textContent=(i+1)+'. '+q.title;chart.append(title);
+ const counts=q.options.map((_,j)=>answers.filter(a=>a.values[i]===j).length);
+ q.options.forEach((text,j)=>{const count=counts[j],pct=answers.length?count/answers.length*100:0;const row=document.createElement('div');row.className='row';const labels=document.createElement('div');labels.className='labels';const name=document.createElement('span');name.textContent=text;const value=document.createElement('span');value.textContent=count+'건 · '+pct.toFixed(1)+'%';labels.append(name,value);const track=document.createElement('div');track.className='track';track.setAttribute('aria-hidden','true');const bar=document.createElement('div');bar.className='bar';bar.style.background=COLORS[j%COLORS.length];bar.style.width=pct+'%';track.append(bar);row.append(labels,track);chart.append(row);});root.append(chart);
+ });
+ document.getElementById('empty').textContent=answers.length?'비율은 현재 브라우저의 전체 응답 기준입니다. 반복 제출이 가능한 체험·테스트용 버전입니다.':'아직 응답이 없습니다. 설문을 제출하면 그래프가 표시됩니다.';
+ document.getElementById('export').disabled=answers.length===0;
+}
+document.getElementById('survey').addEventListener('submit',event=>{
+ event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;
+ const data=new FormData(form);const values=QUESTIONS.map((_,i)=>Number(data.get('q'+i)));
+ answers.push({time:new Date().toISOString(),values});persist();render();form.reset();
+ message.textContent=storageAvailable?'✓ 응답이 저장되고 그래프가 갱신되었습니다. 다음 응답을 입력할 수 있습니다.':'✓ 그래프가 갱신되었지만 브라우저 저장에 실패했습니다. 페이지를 닫기 전에 CSV를 내려받아 주세요.';
+ if(window.matchMedia('(max-width:780px)').matches)document.getElementById('results').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+});
+document.getElementById('clear').addEventListener('click',()=>{if(!answers.length)return;if(!confirm('현재 브라우저의 모든 응답을 삭제할까요? 삭제 후 복구할 수 없습니다.'))return;answers=[];persist();render();message.textContent=storageAvailable?'로컬 응답을 삭제했습니다.':'현재 화면의 응답은 삭제했지만 저장소 갱신에 실패했습니다.';});
+function csvCell(value){let text=String(value);if(/^[=+@-]/.test(text))text="'"+text;return '"'+text.replace(/"/g,'""')+'"';}
+document.getElementById('export').addEventListener('click',()=>{
+ const rows=[['제출 시각(UTC)',...QUESTIONS.map(q=>q.title)],...answers.map(a=>[a.time,...a.values.map((v,i)=>QUESTIONS[i].options[v])])];
+ const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='설문응답-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+window.addEventListener('storage',event=>{if(event.key!==KEY)return;try{const data=JSON.parse(event.newValue||'[]');if(Array.isArray(data)&&data.every(valid)){answers=data;render();}}catch(e){message.textContent='다른 탭의 데이터를 읽지 못했습니다. 새로고침 후 확인해 주세요.';}});
+render();
+</script>
+</body>
+</html>
